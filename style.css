@@ -675,7 +675,9 @@ textarea:focus, select:focus {
 
   .video-container {
     aspect-ratio: 16 / 9;
-    max-height: 150px;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
   }
 
   .question-text {
