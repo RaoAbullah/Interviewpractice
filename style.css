@@ -559,8 +559,8 @@ textarea:focus, select:focus {
   }
 
   .interview-content {
-    padding: clamp(8px, 2vw, 12px);
-    gap: 10px;
+    padding: 8px;
+    gap: 8px;
     justify-content: flex-start;
     overflow-y: auto;
   }
@@ -568,7 +568,9 @@ textarea:focus, select:focus {
   .video-container {
     width: 100%;
     max-width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 9 / 16;
+    height: auto;
+    min-height: 350px;
     border-radius: 8px;
     border-width: 1px;
   }
