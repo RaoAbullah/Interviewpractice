@@ -1,6 +1,8 @@
 // ===== ELEMENTS =====
 const startBtn = document.getElementById("startBtn");
 const setupContainer = document.getElementById("setupContainer");
+const countdownOverlay = document.getElementById("countdownOverlay");
+const countdownNumber = document.getElementById("countdownNumber");
 const jobDescriptionInput = document.getElementById("jobDescription");
 const questionCountSelect = document.getElementById("questionCount");
 
@@ -2063,6 +2065,12 @@ startBtn.addEventListener("click", async () => {
   currentIndex = 0;
 
   setupContainer.style.display = "none";
+  countdownOverlay.style.display = "flex";
+
+  // Show countdown: 3, 2, 1
+  await showCountdown();
+
+  countdownOverlay.style.display = "none";
   interviewSection.style.display = "flex";
 
   try {
@@ -2074,6 +2082,35 @@ startBtn.addEventListener("click", async () => {
     interviewSection.style.display = "none";
   }
 });
+
+// ===== COUNTDOWN FUNCTION =====
+function showCountdown() {
+  return new Promise((resolve) => {
+    let count = 3;
+    countdownNumber.textContent = count;
+    
+    const countdownInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownNumber.textContent = count;
+        // Reset animation
+        countdownNumber.style.animation = "none";
+        setTimeout(() => {
+          countdownNumber.style.animation = "";
+        }, 10);
+      } else {
+        clearInterval(countdownInterval);
+        countdownNumber.textContent = "GO!";
+        countdownNumber.style.fontSize = "120px";
+        countdownNumber.style.animation = "countdownPulse 0.6s ease-out forwards";
+        setTimeout(() => {
+          countdownNumber.style.fontSize = "180px";
+          resolve();
+        }, 600);
+      }
+    }, 1000);
+  });
+}
 
 
 // ===== QUESTION GENERATOR =====
