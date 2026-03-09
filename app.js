@@ -1,3 +1,276 @@
+// ===== SUPABASE INITIALIZATION =====
+// TODO: Replace with your Supabase credentials from https://supabase.com
+const SUPABASE_URL = 'https://jzpznyogciqzktarxrgv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6cHpueW9nY2lxemt0YXJ4cmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NzIzMTMsImV4cCI6MjA4NzI0ODMxM30.01DLoQjbcdU8s2YshIAozNBMwgTq0Z3OncWb5ss5_yQ';
+
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentUser = null;
+
+// ===== AUTHENTICATION ELEMENTS =====
+const authContainer = document.getElementById('authContainer');
+const appContainer = document.getElementById('appContainer');
+const loginForm = document.getElementById('loginForm');
+const signupForm = document.getElementById('signupForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const signupEmail = document.getElementById('signupEmail');
+const signupPassword = document.getElementById('signupPassword');
+const signupConfirm = document.getElementById('signupConfirm');
+const loginError = document.getElementById('loginError');
+const signupError = document.getElementById('signupError');
+const userEmail = document.getElementById('userEmail');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// ===== AUTHENTICATION FUNCTIONS =====
+async function handleLogin(e) {
+  e.preventDefault();
+  loginError.textContent = '';
+  loginError.classList.remove('show');
+
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+
+  if (!email || !password) {
+    showError(loginError, 'Please fill in all fields');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      showError(loginError, error.message);
+      return;
+    }
+
+    if (data.user) {
+      currentUser = data.user;
+      showAppContainer();
+    }
+  } catch (err) {
+    showError(loginError, 'An error occurred. Please try again.');
+  }
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  signupError.textContent = '';
+  signupError.classList.remove('show');
+
+  const email = signupEmail.value.trim();
+  const password = signupPassword.value;
+  const confirmPassword = signupConfirm.value;
+
+  if (!email || !password || !confirmPassword) {
+    showError(signupError, 'Please fill in all fields');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showError(signupError, 'Passwords do not match');
+    return;
+  }
+
+  if (password.length < 6) {
+    showError(signupError, 'Password must be at least 6 characters');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      showError(signupError, error.message);
+      return;
+    }
+
+    showError(signupError, 'Account created! Check your email to verify. Then sign in.');
+    // Clear form
+    signupEmail.value = '';
+    signupPassword.value = '';
+    signupConfirm.value = '';
+  } catch (err) {
+    showError(signupError, 'An error occurred. Please try again.');
+  }
+}
+
+async function handleLogout() {
+  try {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) throw error;
+    
+    currentUser = null;
+    showAuthContainer();
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+    loginEmail.value = '';
+    loginPassword.value = '';
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+}
+
+async function handleGoogleSignIn() {
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+
+    if (error) {
+      showError(loginError, 'Failed to sign in with Google: ' + error.message);
+      return;
+    }
+  } catch (err) {
+    console.error('Google sign-in error:', err);
+    showError(loginError, 'An error occurred during Google sign-in');
+  }
+}
+
+function toggleAuthForm(e) {
+  e.preventDefault();
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const loginTabs = document.querySelector('.auth-tabs');
+  const signupTabs = document.getElementById('signupTabs');
+  const loginError = document.getElementById('loginError');
+  const signupError = document.getElementById('signupError');
+  
+  const loginVisible = loginForm.style.display !== 'none' && loginForm.style.display !== '';
+  
+  if (loginVisible) {
+    loginForm.style.display = 'none';
+    loginTabs.style.display = 'none';
+    signupForm.style.display = 'block';
+    signupTabs.style.display = 'flex';
+  } else {
+    loginForm.style.display = 'block';
+    loginTabs.style.display = 'flex';
+    signupForm.style.display = 'none';
+    signupTabs.style.display = 'none';
+  }
+  
+  loginError.textContent = '';
+  loginError.classList.remove('show');
+  signupError.textContent = '';
+  signupError.classList.remove('show');
+}
+
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('loginForm');
+  const magicForm = document.getElementById('magicForm');
+  const tabs = document.querySelectorAll('.auth-tabs .auth-tab');
+  
+  tabs.forEach(t => t.classList.remove('active'));
+  
+  if (tab === 'email') {
+    loginForm.style.display = 'block';
+    magicForm.style.display = 'none';
+    tabs[0].classList.add('active');
+  } else {
+    loginForm.style.display = 'none';
+    magicForm.style.display = 'block';
+    tabs[1].classList.add('active');
+  }
+}
+
+function switchSignupTab(tab) {
+  const signupForm = document.getElementById('signupForm');
+  const tabs = document.getElementById('signupTabs').querySelectorAll('.auth-tab');
+  
+  tabs.forEach(t => t.classList.remove('active'));
+  
+  if (tab === 'email') {
+    signupForm.style.display = 'block';
+    tabs[0].classList.add('active');
+  } else {
+    signupForm.style.display = 'none';
+    tabs[1].classList.add('active');
+  }
+}
+
+async function handleMagicLink() {
+  const email = document.getElementById('magicEmail').value.trim();
+  const magicError = document.getElementById('magicError');
+  
+  if (!email) {
+    showError(magicError, 'Please enter your email');
+    return;
+  }
+  
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
+    
+    if (error) {
+      showError(magicError, error.message);
+      return;
+    }
+    
+    showError(magicError, 'Check your email for the magic link!');
+    document.getElementById('magicEmail').value = '';
+  } catch (err) {
+    console.error('Magic link error:', err);
+    showError(magicError, 'An error occurred. Please try again.');
+  }
+}
+
+function showError(element, message) {
+  element.textContent = message;
+  element.classList.add('show');
+}
+
+function showAuthContainer() {
+  authContainer.style.display = 'flex';
+  appContainer.style.display = 'none';
+}
+
+function showAppContainer() {
+  authContainer.style.display = 'none';
+  appContainer.style.display = 'flex';
+  userEmail.textContent = currentUser.email;
+}
+
+async function checkAuthStatus() {
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
+    
+    if (error) throw error;
+    
+    if (data.session && data.session.user) {
+      currentUser = data.session.user;
+      showAppContainer();
+    } else {
+      showAuthContainer();
+    }
+  } catch (err) {
+    console.error('Auth check error:', err);
+    showAuthContainer();
+  }
+}
+
+// ===== EVENT LISTENERS =====
+loginForm.addEventListener('submit', handleLogin);
+signupForm.addEventListener('submit', handleSignup);
+logoutBtn.addEventListener('click', handleLogout);
+
+// Check auth status on page load
+checkAuthStatus();
+
 // ===== ELEMENTS =====
 const startBtn = document.getElementById("startBtn");
 const setupContainer = document.getElementById("setupContainer");
