@@ -123,7 +123,7 @@ async function handleGoogleSignIn() {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: "https://raoabullah.github.io/Interviewpractice/"
       }
     });
 
@@ -212,7 +212,7 @@ async function handleMagicLink() {
     const { data, error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: "https://raoabullah.github.io/Interviewpractice/"
       }
     });
     
