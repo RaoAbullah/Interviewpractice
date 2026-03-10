@@ -85,6 +85,9 @@ async function handleSignup(e) {
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: "https://raoabullah.github.io/Interviewpractice/"
+      }
     });
 
     if (error) {
@@ -92,11 +95,7 @@ async function handleSignup(e) {
       return;
     }
 
-    showError(signupError, 'Account created! Check your email to verify. Then sign in.');
-    // Clear form
-    signupEmail.value = '';
-    signupPassword.value = '';
-    signupConfirm.value = '';
+    showError(signupError, 'Account created! Check your email to verify.');
   } catch (err) {
     showError(signupError, 'An error occurred. Please try again.');
   }
