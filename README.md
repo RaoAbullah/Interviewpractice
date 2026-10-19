@@ -1,4 +1,4 @@
-# 🎙️ PrepMaster: Role-Based Mock Interview Platform
+# Interviewpractice
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live_Website-success?style=for-the-badge&logo=googlechrome)](https://raoabullah.github.io/Interviewpractice/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/)
@@ -6,65 +6,101 @@
 [![WebRTC](https://img.shields.io/badge/WebRTC-MediaRecorder_API-FF4438?style=for-the-badge)](https://webrtc.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-> Built during an **AI SaaS Product Internship at Technologia Solutions LLC**.
+> Developed during an **AI SaaS Product Internship at Technologia Solutions LLC**.
 
-PrepMaster is a client-side interview simulation web application that replicates high-pressure technical and behavioral interviews. It delivers role-specific question sets, enforces realistic prep timers, records synchronized audio/video responses locally, and enables instant session exports—with complete privacy and zero video server storage.
+**Interviewpractice** is a full-featured, client-side interview simulation web application built to help candidates practice real-time technical and behavioral interviews. The application pairs custom job descriptions with targeted question sets, enforces authentic 30-second preparation timers, captures in-browser audio and video streams via the HTML5 `MediaRecorder` API, and provides instant session downloads—all designed around strict client-side privacy with zero server-side video storage.
 
 ---
 
-## 🏗️ System Workflow
+## 📌 Project Overview
+
+Traditional mock interview tools either rely on invasive video storage or lack authentic time-pressured environments. **Interviewpractice** solves this by providing:
+1. **Dynamic Role Tailoring:** Users can paste any target job description to generate relevant, role-specific questions.
+2. **Realistic Time Constraints:** A 3-second preparation countdown followed by a strict 30-second thinking timer per question.
+3. **Local Media Recording:** Real-time synchronized audio and video capture directly in the browser.
+4. **Privacy-Preserving Architecture:** Audio and video streams are processed exclusively in browser memory (Blob buffers) and downloaded locally by the user.
+
+---
+
+## 🏗️ System Architecture & Workflow
 
 ```mermaid
 sequenceDiagram
     actor Candidate
-    participant UI as Browser UI
-    participant Auth as Supabase Auth
-    participant Media as Web MediaRecorder API
-    participant Disk as Local Storage / Download
+    participant UI as Browser Interface
+    participant Auth as Supabase Auth (OAuth/Email)
+    participant Media as Browser MediaRecorder API
+    participant Disk as Local Client Storage
 
-    Candidate->>UI: Select Role & Difficulty
-    UI->>Auth: Validate Session / Token
-    Auth-->>UI: Authenticated
-    UI->>Candidate: Present Question + 30s Prep Timer
-    Candidate->>Media: Grant Camera & Mic Permissions
-    Media-->>UI: Live Stream Preview
-    Candidate->>Media: Record Answer
-    Media-->>Disk: Compile WebM / MP4 Stream
-    Candidate->>UI: End Interview
-    UI->>Candidate: Instant Video Playback & One-Click Download
+    Candidate->>UI: Select Login (Email, Magic Link, or Google OAuth)
+    UI->>Auth: Validate Credentials / Session Token
+    Auth-->>UI: Authentication Confirmed
+    Candidate->>UI: Paste Job Description & Select Question Count (5, 10, 20, 30)
+    Candidate->>UI: Click "Start Interview"
+    UI->>Media: Request Camera & Microphone Permissions
+    Media-->>UI: Active MediaStream Preview
+    UI->>Candidate: Display 3-Second "Get Ready!" Countdown
+    loop For Each Interview Question
+        UI->>Candidate: Display Question + 30-Second Thinking Timer
+        UI->>Media: Trigger Stream Recording (● REC Active)
+        Candidate->>Media: Deliver Answer
+        Candidate->>UI: Next Question / Submit
+    end
+    Candidate->>UI: Finish Interview
+    UI->>Media: Stop Recording & Assemble Blob Chunks
+    Media-->>Disk: Compile WebM / MP4 Video File
+    UI->>Candidate: Playback Preview & Automatic Session Download
 ```
 
 ---
 
 ## 🌟 Key Features
 
-* **Targeted Domain Question Bank:** Curated question pools across multiple tech domains:
-  * Software Engineering (Frontend, Backend, Full-Stack)
-  * Data Science & Machine Learning
-  * DevOps & Cloud Engineering
-  * Product Management & UI/UX Design
-* **Real-World Interview Constraints:** Enforces a configurable 30-second thinking countdown before auto-triggering response recording.
-* **In-Browser Hardware Streaming:** Integrates native HTML5 `navigator.mediaDevices.getUserMedia` and `MediaRecorder` API for zero-latency audio/video capture.
-* **Privacy-First Architecture:** Video recordings remain strictly in local memory/blob buffers; no video or audio data is ever transmitted to external servers.
-* **Cloud Authentication:** Integrated with **Supabase Auth** for persistent user sessions, email sign-in/registration, and profile tracking.
-* **Session Export:** Download full interview sessions with formatted timestamps for self-review or coaching feedback.
+* **Multi-Method Authentication:**
+  * Email & Password authentication with input validation.
+  * Passwordless **Magic Link** authentication.
+  * One-click **Google OAuth** integration via Supabase.
+* **Customizable Practice Sessions:**
+  * **Role Tailoring:** Analyzes input job descriptions to serve contextual interview questions.
+  * **Session Lengths:** Choose between 5 (Quick Practice), 10 (Standard), 20 (Comprehensive), or 30 Questions (Full Session).
+* **Live Hardware Integration:**
+  * Utilizes `navigator.mediaDevices.getUserMedia` for high-definition webcam and microphone access.
+  * Live camera preview window so candidates can monitor eye contact, framing, and posture.
+* **Timed Execution Environment:**
+  * Animated 3-second transition overlay ("Get Ready!").
+  * 30-second countdown timer per question to simulate real interview pressure.
+* **Progress Tracking:** Real-time progress bar with active question indicators (`Q 1/10`) and dynamic state styling.
+* **Instant Session Download:** Converts recorded video streams into downloadable files with timestamps for offline review.
+* **Zero Video Server Footprint:** No candidate video or audio data is ever transmitted to external servers.
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** Modern Semantic HTML5, CSS3 Glassmorphism UI, Responsive Flexbox/Grid
-* **Core Logic:** Vanilla JavaScript (ES6+ Modules, Async/Await, Blob streams)
-* **Authentication:** Supabase Client SDK (`@supabase/supabase-js`)
-* **Media Handling:** WebRTC `MediaStream`, `MediaRecorder` API
+* **Frontend:** HTML5, CSS3 (Modern Glassmorphism UI, Responsive Flexbox & Grid layouts)
+* **Application Logic:** Vanilla JavaScript (ES6+ Modules, Async/Await, Blob stream management)
+* **Authentication & Backend:** Supabase Auth (`@supabase/supabase-js`)
+* **Streaming & Media:** Native WebRTC `MediaStream`, HTML5 `MediaRecorder` API
 * **Deployment:** GitHub Pages
+
+---
+
+## 📂 Repository File Structure
+
+```text
+Interviewpractice/
+├── index.html        # Complete application UI (Auth views, setup forms, interview stage)
+├── app.js            # Authentication logic, hardware stream capture, timers, recording logic
+├── style.css         # Modern glassmorphism styling, animations, and responsive breakpoints
+└── README.md         # Comprehensive project documentation
+```
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-* Any modern web browser with camera and microphone access (Chrome, Edge, Firefox, Brave, Safari).
+* Any modern web browser with camera and microphone support (Google Chrome, Microsoft Edge, Mozilla Firefox, Brave, Safari).
 
 ### Run Locally
 1. Clone the repository:
@@ -72,12 +108,13 @@ sequenceDiagram
    git clone https://github.com/RaoAbullah/Interviewpractice.git
    cd Interviewpractice
    ```
-2. Open `index.html` directly in your browser or run via local server:
+2. Open `index.html` directly in your browser, or serve via a local HTTP server:
    ```bash
-   # Using Python
+   # Python 3
    python -m http.server 3000
 
-   # Or using VS Code Live Server
+   # Node.js (npx)
+   npx serve .
    ```
 3. Navigate to `http://localhost:3000` in your browser.
 
